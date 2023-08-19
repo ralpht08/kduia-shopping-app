@@ -2,79 +2,49 @@ import React, { createContext, useReducer } from 'react';
 
 // 5. The reducer - this is used to update the state, based on the action
 export const AppReducer = (state, action) => {
-    let new_expenses = [];
+    //let new_expenses = [];
     switch (action.type) {
         case 'ADD_QUANTITY':
-            let updatedqty = false;
-            let totalUpdatedExpenses = [];
-            let showAlert = false; // New variable to track the alert
-        
-            state.expenses.forEach((expense) => {
-                if (expense.name === action.payload.name) {
-                    const updatedQuantity = expense.quantity + action.payload.quantity;
-                    if (updatedQuantity * expense.unitprice <= state.budget) {
-                        expense.quantity = updatedQuantity;
-                        updatedqty = true;
-                    } else {
-                        showAlert = true; // Set the flag to true if validation fails
-                    }
-                }
-                totalUpdatedExpenses.push(expense);
-            });
-        
-            if (updatedqty) {
-                return {
-                    ...state,
-                    expenses: totalUpdatedExpenses,
-                };
-            }
-            
-            if (showAlert) {
-                // Handle validation error, quantity exceeds budget
-                alert("Quantity exceeds budget!");
-            }
-
-            state.expenses.map((expense)=>{
-                if(expense.name === action.payload.name) {
-                    expense.quantity = expense.quantity + action.payload.quantity;
-                    updatedqty = true;
-                }
-                new_expenses.push(expense);
-                return true;
-            })
-            state.expenses = new_expenses;
-            action.type = "DONE";
             return {
                 ...state,
+                expenses: state.expenses.map(expense => {
+                    if (expense.name === action.payload.name) {
+                        const newUnitPrice = expense.unitprice + action.payload.unitprice;
+                        const newTotalValue = newUnitPrice;
+
+                        if (newTotalValue <= state.budget - state.CartValue) {
+                            return {
+                                ...expense,
+                                unitprice: newUnitPrice,
+                            };
+                        } else {
+                            alert("The value cannot exceed the remaining funds!");
+                            return expense;
+                        }
+                    }
+                    return expense;
+                }),
+                CartValue: state.CartValue + action.payload.unitprice * state.expenses.find(expense => expense.name === action.payload.name).quantity,
             };
 
-            case 'RED_QUANTITY':
-                state.expenses.map((expense)=>{
-                    if(expense.name === action.payload.name) {
-                        expense.quantity = expense.quantity - action.payload.quantity;
-                    }
-                    expense.quantity = expense.quantity < 0 ? 0: expense.quantity;
-                    new_expenses.push(expense);
-                    return true;
-                })
-                state.expenses = new_expenses;
-                action.type = "DONE";
-                return {
-                    ...state,
-                };
-        case 'DELETE_ITEM':
-            state.expenses.map((expense)=>{
-                if(expense.name === action.payload.name) {
-                    expense.quantity = 0;
-                }
-                new_expenses.push(expense);
-                return true;
-            })
-            state.expenses = new_expenses;
-            action.type = "DONE";
+        case 'RED_QUANTITY':
             return {
                 ...state,
-            };
+                expenses: state.expenses.map(expense => {
+                    if (expense.name === action.payload.name) {
+                        const newUnitPrice = Math.max(expense.unitprice - action.payload.unitprice, 0);
+                        //const newTotalValue = newUnitPrice;
+
+                        return {
+                            ...expense,
+                            unitprice: newUnitPrice,
+                        };
+                    }
+                    return expense;
+                }),
+                CartValue: state.CartValue - action.payload.unitprice * state.expenses.find(expense => expense.name === action.payload.name).quantity,
+            };;
+
     case 'CHG_LOCATION':
             action.type = "DONE";
             state.Location = action.payload;
@@ -82,11 +52,21 @@ export const AppReducer = (state, action) => {
                 ...state
             }
             
-    case 'UPDATE_BUDGET':
+    case 'UPDATE_UNIT_PRICE':
+        const updatedExpenses = state.expenses.map((expense) => {
+            if (expense.name === action.payload.name) {
                 return {
-                    ...state,
-                    budget: action.payload,
+                    ...expense,
+                    unitprice: action.payload.unitprice,
                 };
+            }
+            return expense;
+        });
+
+        return {
+            ...state,
+            expenses: updatedExpenses,
+        };
 
         default:
             return state;
@@ -102,8 +82,8 @@ const initialState = {
         { id: "Human Resource", name: 'Human Resource',unitprice: 40 },
         { id: "IT", name: 'IT',unitprice: 500 },
     ],
-    Location: '£',
-    budget: '2000'
+    Location: '$',
+    budget: 2000,
 };
 
 // 2. Creates the context this is the thing our components import and use to get the state
@@ -116,7 +96,7 @@ export const AppProvider = (props) => {
     const [state, dispatch] = useReducer(AppReducer, initialState);
 
     const totalExpenses = state.expenses.reduce((total, item) => {
-        return (total = total + (item.unitprice*item.quantity));
+        return (total = total + (item.unitprice));
     }, 0);
 state.CartValue = totalExpenses;
 
@@ -126,7 +106,8 @@ state.CartValue = totalExpenses;
                 expenses: state.expenses,
                 CartValue: state.CartValue,
                 dispatch,
-                Location: state.Location
+                Location: state.Location,
+                budget: state.budget
             }}
         >
             {props.children}

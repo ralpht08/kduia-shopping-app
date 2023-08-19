@@ -13,15 +13,15 @@ const Location = () => {
     
 
   return (
-        <div className='alert alert-secondary'> Location {
-      <select name="Location" id="Location" onChange={event=>changeLocation(event.target.value)}>
-        <option value="£">Uk(£)</option>
-        <option value="₹">India(₹)</option>
-        <option value="€">Europe(€)</option>
-        <option value="CAD">Canada(CAD)</option>
-      </select>	
+        <div className='alert alert-secondary' style={{backgroundColor: 'green', width: '250px'}}> Currency ({
+      <select name="Location" id="Location" onChange={event=>changeLocation(event.target.value)} style={{backgroundColor: 'green', color: 'black', padding: '6px', border: 'none'}}>
+        <option value="$">$ Dollar</option>
+        <option value="£ ">£ Pound</option>
+        <option value="€">€ Euro</option>
+        <option value="₹ ">₹ Ruppee</option>
+    </select>	
       }	
-    </div>
+    )</div>
     );
 };
 

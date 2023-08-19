@@ -4,7 +4,7 @@ import { AppContext } from '../context/AppContext';
 const ItemSelected = (props) => {
     const { dispatch, Location} = useContext(AppContext);
     const [name, setName] = useState('');
-    const [quantity, setQuantity] = useState('');
+    const [unitprice, setUnitPrice] = useState('');
     const [action, setAction] = useState('');
     
 
@@ -12,7 +12,7 @@ const ItemSelected = (props) => {
 
         const item = {
             name: name,
-            quantity: parseInt(quantity),
+            unitprice: parseFloat(unitprice),
         };
 
         if(action === "Reduce") {
@@ -58,9 +58,9 @@ const ItemSelected = (props) => {
                         required='required'
                         type='number'
                         id='cost'
-                        value={quantity}
+                        value={unitprice}
                         style={{size: 10}}
-                        onChange={(event) => setQuantity(event.target.value)}>
+                        onChange={(event) => setUnitPrice(event.target.value)}>
                         </input>
 
                     <button className="btn btn-primary" onClick={submitEvent} style={{ marginLeft: '2rem' }}>
